@@ -59,6 +59,7 @@ class UnifiedPreviewManager:
                 'Ctrl+Shift+P'
             )
             self.preview_action.setCheckable(True)
+            self.preview_action.setVisible(False)  # Initially hidden
             self.main_window.preview_action = self.preview_action
             
             # Live preview action
@@ -69,15 +70,18 @@ class UnifiedPreviewManager:
                 checkable=True,
                 checked=True
             )
+            self.live_preview_action.setVisible(False)  # Initially hidden
             self.main_window.live_preview_action = self.live_preview_action
             
             # Refresh preview action
-            self.main_window.add_menu_action(
+            self.refresh_preview_action = self.main_window.add_menu_action(
                 view_menu,
                 '&Refresh Preview',
                 self.refresh_preview,
                 'F5'
             )
+            self.refresh_preview_action.setVisible(False)  # Initially hidden
+            self.main_window.refresh_preview_action = self.refresh_preview_action
     
     def get_preview_type(self, file_path):
         """Get preview type for a file"""
@@ -282,6 +286,9 @@ def add_xml_validation_menu(main_window):
             lambda: validate_xml_unified(main_window),
             'Ctrl+Shift+V'
         )
+        
+        # Initially hide the action - it will be shown only for XML files
+        validate_action.setVisible(False)
         
         # Store reference
         main_window.validate_xml_action = validate_action

@@ -859,6 +859,7 @@ class Notepad(QMainWindow):
             self.text_edit.document().setModified(False)
             self.update_title()
             self.file_type_label.setText("Plain Text")
+            self.update_menu_visibility()  # Update menu visibility for new file
             self.fileNew.emit()
 
     def open_file(self):
@@ -1171,6 +1172,47 @@ class Notepad(QMainWindow):
             self.file_type_label.setText(file_types.get(ext, 'Plain Text'))
         else:
             self.file_type_label.setText('Plain Text')
+        
+        # Update menu visibility based on file type
+        self.update_menu_visibility()
+
+    def get_current_file_extension(self):
+        """Get the current file extension"""
+        if self.current_file:
+            return os.path.splitext(self.current_file)[1].lower()
+        return None
+
+    def is_xml_file(self):
+        """Check if current file is XML"""
+        ext = self.get_current_file_extension()
+        return ext == '.xml'
+
+    def supports_preview(self):
+        """Check if current file supports preview"""
+        ext = self.get_current_file_extension()
+        if not ext:
+            return False
+        
+        # Import preview types from unified_preview
+        from components.unified_preview import PREVIEW_TYPES
+        return ext in PREVIEW_TYPES
+
+    def update_menu_visibility(self):
+        """Update menu item visibility based on current file type"""
+        # Update XML validation menu visibility
+        if hasattr(self, 'validate_xml_action'):
+            self.validate_xml_action.setVisible(self.is_xml_file())
+        
+        # Update preview menu visibility
+        supports_preview = self.supports_preview()
+        if hasattr(self, 'preview_action'):
+            self.preview_action.setVisible(supports_preview)
+        
+        if hasattr(self, 'live_preview_action'):
+            self.live_preview_action.setVisible(supports_preview)
+            
+        if hasattr(self, 'refresh_preview_action'):
+            self.refresh_preview_action.setVisible(supports_preview)
 
     def change_encoding(self, encoding):
         """Fixed to avoid duplicate updates"""
