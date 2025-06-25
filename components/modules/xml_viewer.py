@@ -135,7 +135,7 @@ class XMLTreeWidget(QTreeWidget):
                 background: {self.colors["gray3"]};
                 min-height: 30px;
                 border: none;
-                border-radius: 7px;
+                border-radius: 0px;
                 margin: 2px;
             }}
             
@@ -430,8 +430,8 @@ class XMLViewer(QWidget):
                 margin-right: 1px;
                 border: 1px solid {self.colors["gray3"]};
                 border-bottom: none;
-                border-top-left-radius: 4px;
-                border-top-right-radius: 4px;
+                border-top-left-radius: 0px;
+                border-top-right-radius: 0px;
                 min-width: 80px;
             }}
             
