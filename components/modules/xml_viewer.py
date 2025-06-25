@@ -128,14 +128,14 @@ class XMLTreeWidget(QTreeWidget):
                 background: {self.colors["black"]};
                 width: 14px;
                 border: none;
-                border-radius: 0px;
+                border-radius: 2px;
             }}
             
             QScrollBar::handle:vertical {{
                 background: {self.colors["gray3"]};
                 min-height: 30px;
                 border: none;
-                border-radius: 0px;
+                border-radius: 2px;
                 margin: 2px;
             }}
             
@@ -243,7 +243,7 @@ class XMLFormattedView(BasePreviewViewer):
             }}
             
             .xml-value {{
-                color: #ce9178;  /* VS Code string color */
+                color: {self.colors["green"]};  /* One Dark string color */
             }}
             
             .xml-text {{
@@ -251,19 +251,19 @@ class XMLFormattedView(BasePreviewViewer):
             }}
             
             .xml-comment {{
-                color: #6a9955;  /* VS Code comment color */
+                color: {self.colors["gray4"]};  /* One Dark comment color */
                 font-style: italic;
             }}
             
             .xml-cdata {{
-                color: #d7ba7d;  /* VS Code preprocessor color */
+                color: {self.colors["orange"]};  /* One Dark preprocessor color */
                 background-color: {self.colors["gray2"]};
                 padding: 2px 4px;
-                border-radius: 3px;
+                border-radius: 2px;
             }}
             
             .xml-declaration {{
-                color: #c586c0;  /* VS Code keyword color */
+                color: {self.colors["purple"]};  /* One Dark keyword color */
             }}
             
             pre {{
@@ -430,8 +430,8 @@ class XMLViewer(QWidget):
                 margin-right: 1px;
                 border: 1px solid {self.colors["gray3"]};
                 border-bottom: none;
-                border-top-left-radius: 0px;
-                border-top-right-radius: 0px;
+                border-top-left-radius: 2px;
+                border-top-right-radius: 2px;
                 min-width: 80px;
             }}
             
@@ -458,7 +458,7 @@ class XMLViewer(QWidget):
         
         if not xml_text.strip():
             self.tree_view.clear_tree()
-            self.formatted_view.setHtml("<p style='color: #858585;'>Start typing XML to see the preview...</p>")
+            self.formatted_view.setHtml(f"<p style='color: {self.colors['gray4']};'>Start typing XML to see the preview...</p>")
             self.stats_label.setText("No XML loaded")
             return
         

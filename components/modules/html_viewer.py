@@ -34,7 +34,7 @@ class HTMLViewer(BasePreviewViewer):
                 background-color: {self.colors["gray2"]};
                 color: {self.colors["green"]};
                 padding: 2px 4px;
-                border-radius: 3px;
+                border-radius: 2px;
                 font-size: 0.9em;
             }}
             pre {{

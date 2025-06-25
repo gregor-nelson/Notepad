@@ -133,6 +133,24 @@ class Icons:
     REPLACE = '''<svg width="16" height="16" viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg">
         <path fill="currentColor" d="M3 4h7v2l3-3-3-3v2H2v5h1V4zm10 5h-1v3H5v-2l-3 3 3 3v-2h8V9z"/>
     </svg>'''
+    
+    # Checkbox icons for menu items
+    CHECK_CHECKED = '''<svg width="13" height="13" viewBox="0 0 13 13" xmlns="http://www.w3.org/2000/svg">
+        <line x1="3" y1="6.5" x2="10" y2="6.5" stroke="currentColor" stroke-width="1.5" stroke-dasharray="2,1"/>
+    </svg>'''
+    
+    CHECK_UNCHECKED = '''<svg width="13" height="13" viewBox="0 0 13 13" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="1" width="11" height="11" fill="none" stroke="currentColor" stroke-width="1" opacity="0.3"/>
+    </svg>'''
+    
+    @staticmethod
+    def get_svg_data_url(svg_str, color="#d4d7dd"):
+        """Create data URL for SVG to use in CSS background-image."""
+        import base64
+        svg_data = svg_str.replace("currentColor", color)
+        # Encode SVG as data URL
+        encoded = base64.b64encode(svg_data.encode('utf-8')).decode('utf-8')
+        return f"data:image/svg+xml;base64,{encoded}"
 
 # --- Logging Setup ---
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -677,12 +695,14 @@ class Notepad(QMainWindow):
                 width: 13px;
                 height: 13px;
                 margin-left: 4px;
+                background-image: url({Icons.get_svg_data_url(Icons.CHECK_UNCHECKED, self.colors["icon"])});
+                background-repeat: no-repeat;
+                background-position: center;
             }}
             QMenu::indicator:checked {{
-                image: none;
-                background-color: {self.colors["blue"]};
-                border: 1px solid {self.colors["blue"]};
-                border-radius: 2px;
+                background-image: url({Icons.get_svg_data_url(Icons.CHECK_CHECKED, self.colors["icon"])});
+                background-repeat: no-repeat;
+                background-position: center;
             }}
             
             /* Status Bar - Clean modern style */
