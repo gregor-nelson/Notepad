@@ -74,7 +74,7 @@ class BasePreviewViewer(QTextBrowser):
         """Show standardized error message"""
         error_html = f"""
         <div style="color: {self.colors['red']}; background-color: rgba(244, 135, 113, 0.1); 
-                    padding: 10px; border-radius: 4px; font-family: 'Segoe UI', sans-serif;">
+                    padding: 10px; border-radius: 2px; font-family: 'Segoe UI', sans-serif;">
             <h3>⚠ {error_type}</h3>
             <p>{error_message}</p>
         </div>

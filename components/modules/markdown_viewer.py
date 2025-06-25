@@ -492,7 +492,7 @@ class MarkdownViewer(BasePreviewViewer):
             code {{
                 background-color: {self.colors["gray2"]};
                 padding: 2px 4px;
-                border-radius: 3px;
+                border-radius: 2px;
                 font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
                 font-size: 0.9em;
                 color: {self.colors["green"]};
@@ -501,7 +501,7 @@ class MarkdownViewer(BasePreviewViewer):
             pre {{
                 background-color: {self.colors["gray2"]};
                 border: 1px solid {self.colors["gray3"]};
-                border-radius: 6px;
+                border-radius: 2px;
                 padding: 16px;
                 overflow-x: auto;
                 margin-bottom: 16px;
@@ -575,7 +575,7 @@ class MarkdownViewer(BasePreviewViewer):
             img {{
                 max-width: 100%;
                 height: auto;
-                border-radius: 6px;
+                border-radius: 2px;
                 margin: 16px 0;
             }}
             
