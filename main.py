@@ -6,6 +6,7 @@ import logging
 import codecs
 from datetime import datetime
 from pathlib import Path
+from functools import partial
 from PyQt6.QtWidgets import (
     QApplication, QMainWindow, QTextEdit, QFileDialog, QMessageBox, QStatusBar,
     QVBoxLayout, QWidget, QMenuBar, QMenu, QFontDialog, QLabel, QDialog,
@@ -25,7 +26,12 @@ from PyQt6.QtCore import (
 from PyQt6.QtPrintSupport import QPrinter, QPrintDialog
 from PyQt6.QtSvg import QSvgRenderer
 
-import syntax_highlighter
+import utils.syntax_highlighter as syntax_highlighter
+import components.unified_preview as unified_preview
+import components.modules.markdown_viewer as markdown_viewer
+import components.modules.xml_viewer as xml_viewer
+
+
 
 # --- Configuration ---
 APP_NAME = "Notepad --"
@@ -49,10 +55,22 @@ TEXT_EXTENSIONS = {
 
 # --- Icon System ---
 class Icons:
-    """Minimal icon system using inline SVG."""
+    """Minimal icon system using inline SVG with caching."""
+    
+    def __init__(self):
+        self._icon_cache = {}
+    
+    def get_icon(self, svg_str, color="#d4d7dd"):
+        """Get cached icon or create new one."""
+        cache_key = f"{svg_str}_{color}"
+        
+        if cache_key not in self._icon_cache:
+            self._icon_cache[cache_key] = self._create_icon(svg_str, color)
+        
+        return self._icon_cache[cache_key]
     
     @staticmethod
-    def create_icon(svg_str, color="#d4d7dd"):
+    def _create_icon(svg_str, color="#d4d7dd"):
         """Create QIcon from SVG string."""
         svg_data = svg_str.replace("currentColor", color).encode('utf-8')
         
@@ -331,6 +349,11 @@ class TextEditWithLineNumbers(QPlainTextEdit):
 
 # --- Main Application ---
 class Notepad(QMainWindow):
+    # Add signals for file operations
+    fileOpened = pyqtSignal(str, str)  # filepath, encoding
+    fileSaved = pyqtSignal(str, str)   # filepath, encoding  
+    fileNew = pyqtSignal()
+    
     def __init__(self):
         super().__init__()
         self.settings = QSettings(ORG_NAME, APP_NAME)
@@ -343,6 +366,10 @@ class Notepad(QMainWindow):
         self._is_busy = False
         self.current_highlighter = None
         self._last_find_params = {}
+        
+        # Cache for file info to avoid repeated I/O
+        self._cached_file_size = None
+        self._cached_file_path = None
         
         # VS Code Dark+ inspired color scheme
         self.colors = {
@@ -363,10 +390,15 @@ class Notepad(QMainWindow):
             "icon": "#c5c5c5",       # VS Code icon color
         }
         
-        # Initialize icons
+        # Initialize icons with caching
         self.icons = Icons()
         
         self.initUI()
+
+        unified_preview.integrate_unified_preview(self)
+        unified_preview.add_xml_validation_menu(self)
+      
+
         self.setupTimers()
         self.loadSettings()
         
@@ -423,16 +455,16 @@ class Notepad(QMainWindow):
     def createMenus(self):
         menu_bar = self.menuBar()
         
-        # File menu with icons
+        # File menu with cached icons
         file_menu = menu_bar.addMenu('&File')
         
         new_action = self.add_menu_action(file_menu, '&New', self.new_file, 
                                          QKeySequence.StandardKey.New)
-        new_action.setIcon(self.icons.create_icon(Icons.NEW_FILE, self.colors["icon"]))
+        new_action.setIcon(self.icons.get_icon(Icons.NEW_FILE, self.colors["icon"]))
         
         open_action = self.add_menu_action(file_menu, '&Open...', self.open_file, 
                                           QKeySequence.StandardKey.Open)
-        open_action.setIcon(self.icons.create_icon(Icons.OPEN_FILE, self.colors["icon"]))
+        open_action.setIcon(self.icons.get_icon(Icons.OPEN_FILE, self.colors["icon"]))
         
         self.recent_menu = file_menu.addMenu("Open Recent")
         self.recent_menu.aboutToShow.connect(self.populate_recent_files)
@@ -441,11 +473,11 @@ class Notepad(QMainWindow):
         
         self.save_action = self.add_menu_action(file_menu, '&Save', self.save_file, 
                                                QKeySequence.StandardKey.Save)
-        self.save_action.setIcon(self.icons.create_icon(Icons.SAVE, self.colors["icon"]))
+        self.save_action.setIcon(self.icons.get_icon(Icons.SAVE, self.colors["icon"]))
         
         save_as_action = self.add_menu_action(file_menu, 'Save &As...', self.save_file_as, 
                                              QKeySequence.StandardKey.SaveAs)
-        save_as_action.setIcon(self.icons.create_icon(Icons.SAVE, self.colors["icon"]))
+        save_as_action.setIcon(self.icons.get_icon(Icons.SAVE, self.colors["icon"]))
         
         file_menu.addSeparator()
         
@@ -457,45 +489,45 @@ class Notepad(QMainWindow):
         
         print_action = self.add_menu_action(file_menu, '&Print...', self.print_document, 
                                            QKeySequence.StandardKey.Print)
-        print_action.setIcon(self.icons.create_icon(Icons.PRINT, self.colors["icon"]))
+        print_action.setIcon(self.icons.get_icon(Icons.PRINT, self.colors["icon"]))
         
         file_menu.addSeparator()
         self.add_menu_action(file_menu, 'E&xit', self.close, QKeySequence.StandardKey.Quit)
         
-        # Edit menu with icons
+        # Edit menu with cached icons
         edit_menu = menu_bar.addMenu('&Edit')
         
         undo_action = self.add_menu_action(edit_menu, '&Undo', self.text_edit.undo, 
                                           QKeySequence.StandardKey.Undo)
-        undo_action.setIcon(self.icons.create_icon(Icons.UNDO, self.colors["icon"]))
+        undo_action.setIcon(self.icons.get_icon(Icons.UNDO, self.colors["icon"]))
         
         redo_action = self.add_menu_action(edit_menu, '&Redo', self.text_edit.redo, 
                                           QKeySequence.StandardKey.Redo)
-        redo_action.setIcon(self.icons.create_icon(Icons.REDO, self.colors["icon"]))
+        redo_action.setIcon(self.icons.get_icon(Icons.REDO, self.colors["icon"]))
         
         edit_menu.addSeparator()
         
         cut_action = self.add_menu_action(edit_menu, 'Cu&t', self.text_edit.cut, 
                                          QKeySequence.StandardKey.Cut)
-        cut_action.setIcon(self.icons.create_icon(Icons.CUT, self.colors["icon"]))
+        cut_action.setIcon(self.icons.get_icon(Icons.CUT, self.colors["icon"]))
         
         copy_action = self.add_menu_action(edit_menu, '&Copy', self.text_edit.copy, 
                                           QKeySequence.StandardKey.Copy)
-        copy_action.setIcon(self.icons.create_icon(Icons.COPY, self.colors["icon"]))
+        copy_action.setIcon(self.icons.get_icon(Icons.COPY, self.colors["icon"]))
         
         paste_action = self.add_menu_action(edit_menu, '&Paste', self.text_edit.paste, 
                                            QKeySequence.StandardKey.Paste)
-        paste_action.setIcon(self.icons.create_icon(Icons.PASTE, self.colors["icon"]))
+        paste_action.setIcon(self.icons.get_icon(Icons.PASTE, self.colors["icon"]))
         
         edit_menu.addSeparator()
         
         find_action = self.add_menu_action(edit_menu, '&Find...', self.show_find_dialog, 
                                           QKeySequence.StandardKey.Find)
-        find_action.setIcon(self.icons.create_icon(Icons.FIND, self.colors["icon"]))
+        find_action.setIcon(self.icons.get_icon(Icons.FIND, self.colors["icon"]))
         
         replace_action = self.add_menu_action(edit_menu, '&Replace...', self.show_replace_dialog, 
                                              QKeySequence.StandardKey.Replace)
-        replace_action.setIcon(self.icons.create_icon(Icons.REPLACE, self.colors["icon"]))
+        replace_action.setIcon(self.icons.get_icon(Icons.REPLACE, self.colors["icon"]))
         
         edit_menu.addSeparator()
         self.add_menu_action(edit_menu, 'Select &All', self.text_edit.selectAll, 
@@ -507,7 +539,7 @@ class Notepad(QMainWindow):
                                                self.toggle_word_wrap, checkable=True)
         
         font_action = self.add_menu_action(format_menu, '&Font...', self.choose_font)
-        font_action.setIcon(self.icons.create_icon(Icons.FONT, self.colors["icon"]))
+        font_action.setIcon(self.icons.get_icon(Icons.FONT, self.colors["icon"]))
         
         format_menu.addSeparator()
         self.syntax_action = self.add_menu_action(format_menu, 'S&yntax Highlighting', 
@@ -787,7 +819,7 @@ class Notepad(QMainWindow):
         self.autosave_timer = QTimer(self)
         self.autosave_timer.timeout.connect(self.autosave)
         
-        # Stats update timer
+        # Stats update timer - Fixed to prevent multiple timers
         self.stats_timer = QTimer(self)
         self.stats_timer.setSingleShot(True)
         self.stats_timer.timeout.connect(self.update_stats)
@@ -798,9 +830,12 @@ class Notepad(QMainWindow):
             self.text_edit.clear()
             self.current_file = None
             self.current_encoding = DEFAULT_ENCODING
+            self._cached_file_size = None
+            self._cached_file_path = None
             self.text_edit.document().setModified(False)
             self.update_title()
             self.file_type_label.setText("Plain Text")
+            self.fileNew.emit()
 
     def open_file(self):
         if self.maybe_save():
@@ -895,16 +930,21 @@ class Notepad(QMainWindow):
         self.text_edit.setPlainText(content)
         self.current_file = self.file_worker.file_path
         self.current_encoding = encoding
+        self._cached_file_path = self.current_file
+        self._cached_file_size = os.path.getsize(self.current_file)
         self.text_edit.document().setModified(False)
         self.update_title()
         self.update_recent_files(self.current_file)
         self.apply_syntax_highlighting()
         self.update_file_type()
         self.status_bar.showMessage(f"Loaded {os.path.basename(self.current_file)}", 3000)
+        self.fileOpened.emit(self.current_file, encoding)
 
     def on_file_saved(self, file_path, encoding):
         self.current_file = file_path
         self.current_encoding = encoding
+        self._cached_file_path = file_path
+        self._cached_file_size = os.path.getsize(file_path)
         self.text_edit.document().setModified(False)
         self.last_save_content = self.text_edit.toPlainText()
         self.clear_backup()
@@ -912,6 +952,7 @@ class Notepad(QMainWindow):
         self.update_recent_files(file_path)
         self.update_file_type()
         self.status_bar.showMessage(f"Saved {os.path.basename(file_path)}", 3000)
+        self.fileSaved.emit(file_path, encoding)
 
     def on_file_error(self, error_msg):
         # Reset stylesheet
@@ -920,12 +961,26 @@ class Notepad(QMainWindow):
         self.status_bar.showMessage("Operation failed", 3000)
 
     def cleanup_file_operation(self):
+        """Improved cleanup with proper signal disconnection"""
         self._is_busy = False
         self.text_edit.setReadOnly(False)
         
+        # Disconnect all signals before cleanup
+        if self.file_worker:
+            try:
+                self.file_worker.finished.disconnect()
+                self.file_worker.error.disconnect()
+                self.file_worker.progress.disconnect()
+            except TypeError:
+                pass  # Already disconnected
+            
+            self.file_worker.stop()
+        
         if self.file_thread and self.file_thread.isRunning():
             self.file_thread.quit()
-            self.file_thread.wait(1000)
+            if not self.file_thread.wait(5000):  # 5 second timeout
+                self.file_thread.terminate()
+                self.file_thread.wait()
         
         self.file_thread = None
         self.file_worker = None
@@ -1037,19 +1092,32 @@ class Notepad(QMainWindow):
 
     # --- UI Updates ---
     def update_title(self):
+        """Optimized to avoid repeated file I/O"""
         modified = "● " if self.text_edit.document().isModified() else ""  # Dot indicator
         name = os.path.basename(self.current_file) if self.current_file else "Untitled"
         
-        # Add file size info for open files
+        # Only get file size if file changed or not cached
         size_info = ""
-        if self.current_file and os.path.exists(self.current_file):
-            size = os.path.getsize(self.current_file)
-            if size < 1024:
-                size_info = f" ({size} B)"
-            elif size < 1024 * 1024:
-                size_info = f" ({size / 1024:.1f} KB)"
+        if self.current_file and self.current_file == self._cached_file_path:
+            # Use cached size
+            if self._cached_file_size is not None:
+                if self._cached_file_size < 1024:
+                    size_info = f" ({self._cached_file_size} B)"
+                elif self._cached_file_size < 1024 * 1024:
+                    size_info = f" ({self._cached_file_size / 1024:.1f} KB)"
+                else:
+                    size_info = f" ({self._cached_file_size / 1024 / 1024:.1f} MB)"
+        elif self.current_file and os.path.exists(self.current_file):
+            # Update cache
+            self._cached_file_size = os.path.getsize(self.current_file)
+            self._cached_file_path = self.current_file
+            
+            if self._cached_file_size < 1024:
+                size_info = f" ({self._cached_file_size} B)"
+            elif self._cached_file_size < 1024 * 1024:
+                size_info = f" ({self._cached_file_size / 1024:.1f} KB)"
             else:
-                size_info = f" ({size / 1024 / 1024:.1f} MB)"
+                size_info = f" ({self._cached_file_size / 1024 / 1024:.1f} MB)"
         
         self.setWindowTitle(f"{modified}{name}{size_info} - {APP_NAME}")
         self.save_action.setEnabled(self.text_edit.document().isModified())
@@ -1081,12 +1149,22 @@ class Notepad(QMainWindow):
             self.file_type_label.setText('Plain Text')
 
     def change_encoding(self, encoding):
+        """Fixed to avoid duplicate updates"""
         self.current_encoding = encoding
-        self.encoding_label.setText(encoding.upper().replace('-SIG', ' BOM'))
+        # Clean display - only update label once
+        display_name = encoding.upper().replace('-SIG', ' BOM')
+        self.encoding_label.setText(display_name)
         self.text_edit.document().setModified(True)
-
+        
+        # Update encoding menu check state
+        for action in self.encoding_group.actions():
+            if action.data() == encoding:
+                action.setChecked(True)
+                break
 
     def on_text_changed(self):
+        """Fixed to cancel previous timer before starting new one"""
+        self.stats_timer.stop()  # Cancel any pending update
         self.stats_timer.start(STATS_UPDATE_INTERVAL_MS)
 
     # --- Features ---
@@ -1150,13 +1228,6 @@ class Notepad(QMainWindow):
         font_size = self.settings.value("font/size", 10, type=int)
         self.text_edit.setFont(QFont(font_family, font_size))
 
-    def change_encoding(self, encoding):
-        self.current_encoding = encoding
-        # Clean display
-        display_name = encoding.upper().replace('-SIG', ' BOM')
-        self.encoding_label.setText(f" {display_name}")
-        self.text_edit.document().setModified(True)
-
     def reopen_with_encoding(self):
         if self.current_file and self.maybe_save():
             encodings = ['utf-8', 'utf-8-sig', 'utf-16', 'latin-1', 'windows-1252']
@@ -1214,6 +1285,7 @@ class Notepad(QMainWindow):
         self.settings.setValue("recentFiles", recent[:MAX_RECENT_FILES])
 
     def populate_recent_files(self):
+        """Simplified with partial instead of lambdas"""
         self.recent_menu.clear()
         recent = self.get_recent_files()
         
@@ -1225,7 +1297,8 @@ class Notepad(QMainWindow):
         for i, file_path in enumerate(recent):
             action = self.recent_menu.addAction(f"&{i+1} {os.path.basename(file_path)}")
             action.setData(file_path)
-            action.triggered.connect(lambda checked, path=file_path: self.open_recent_file(path))
+            # Use partial instead of lambda to avoid reference issues
+            action.triggered.connect(partial(self.open_recent_file, file_path))
         
         self.recent_menu.addSeparator()
         self.recent_menu.addAction("Clear Recent Files", self.clear_recent_files)
@@ -1307,6 +1380,7 @@ class Notepad(QMainWindow):
         if self.maybe_save():
             self.backup_timer.stop()
             self.autosave_timer.stop()
+            self.stats_timer.stop()  # Ensure stats timer is stopped
             self.saveSettings()
             
             # Clean up backups
