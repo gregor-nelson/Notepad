@@ -333,8 +333,8 @@ class TextEditWithLineNumbers(QPlainTextEdit):
         selections = []
         if not self.isReadOnly():
             selection = QTextEdit.ExtraSelection()
-            # VS Code style current line highlight - very subtle
-            lineColor = QColor("#282828")  # Slightly lighter than background
+            # One Dark style current line highlight - very subtle
+            lineColor = QColor("#2c313c")  # Slightly lighter than background
             selection.format.setBackground(lineColor)
             selection.format.setProperty(QTextFormat.Property.FullWidthSelection, True)
             selection.cursor = self.textCursor()
@@ -371,23 +371,27 @@ class Notepad(QMainWindow):
         self._cached_file_size = None
         self._cached_file_path = None
         
-        # VS Code Dark+ inspired color scheme
+        # Atom One Dark theme color scheme
         self.colors = {
-            "black": "#1e1e1e",      # VS Code background
-            "black2": "#1e1e1e",     # Editor background
-            "white": "#d4d4d4",      # VS Code text color
-            "gray1": "#181818",      # Darker than background
-            "gray2": "#252526",      # VS Code sidebar/UI color
-            "gray3": "#3c3c3c",      # VS Code activity bar
-            "gray4": "#858585",      # Muted text/line numbers
-            "blue": "#007acc",       # VS Code blue accent
-            "blue2": "#1177bb",      # Hover state blue
-            "green": "#4ec9b0",      # VS Code green/success
-            "red": "#f48771",        # VS Code modified/error color
-            "selection": "#264f78",  # VS Code selection color
-            "hover": "#2a2d2e",      # Hover background
-            "border": "#464647",     # VS Code border color
-            "icon": "#c5c5c5",       # VS Code icon color
+            "black": "#282c34",      # One Dark background
+            "black2": "#21252b",     # Darker background variant
+            "white": "#abb2bf",      # One Dark main text color
+            "gray1": "#1e2125",      # Darker than background
+            "gray2": "#2c313c",      # One Dark sidebar/UI color
+            "gray3": "#3e4451",      # One Dark border/inactive color
+            "gray4": "#5c6370",      # One Dark comment/muted text
+            "blue": "#61afef",       # One Dark blue
+            "blue2": "#528bff",      # One Dark bright blue accent
+            "green": "#98c379",      # One Dark green
+            "red": "#e06c75",        # One Dark red
+            "orange": "#d19a66",     # One Dark orange/numbers
+            "yellow": "#e5c07b",     # One Dark yellow
+            "purple": "#c678dd",     # One Dark purple/keywords
+            "cyan": "#56b6c2",       # One Dark cyan/built-ins
+            "selection": "#3e4451",  # One Dark selection color
+            "hover": "#353b45",      # One Dark hover background
+            "border": "#3e4451",     # One Dark border color
+            "icon": "#abb2bf",       # One Dark icon color
         }
         
         # Initialize icons with caching

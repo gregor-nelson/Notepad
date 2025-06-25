@@ -41,12 +41,12 @@ class SyntaxHighlighter(QSyntaxHighlighter):
         self.colors = colors if isinstance(colors, dict) else {}
         if not self.colors:
             print("Warning: Invalid or empty colors dictionary passed to SyntaxHighlighter. Using fallback.")
-            # Provide basic fallback colors (essential for operation)
+            # Atom One Dark fallback colors (essential for operation)
             self.colors = {
-                "black": "#1e222a", "white": "#abb2bf", "gray2": "#2e323a",
-                "gray3": "#545862", "gray4": "#6d8dad", "blue": "#61afef",
-                "green": "#7EC7A2", "red": "#e06c75", "orange": "#caaa6a",
-                "yellow": "#EBCB8B", "pink": "#c678dd"
+                "black": "#282c34", "white": "#abb2bf", "gray2": "#2c313c",
+                "gray3": "#3e4451", "gray4": "#5c6370", "blue": "#61afef",
+                "green": "#98c379", "red": "#e06c75", "orange": "#d19a66",
+                "yellow": "#e5c07b", "purple": "#c678dd", "cyan": "#56b6c2"
                 }
 
         # --- Expanded Formats ---
@@ -75,38 +75,38 @@ class SyntaxHighlighter(QSyntaxHighlighter):
                     pass
              return fmt
 
-        # Common formats across languages
+        # Common formats across languages - Atom One Dark colors
         self.formats = {
-            'keyword': _create_format_safe('blue', '#61afef'),
-            'keyword_decl': _create_format_safe('blue', '#61afef', bold=True), # class, def, function, const
-            'keyword_ctrl': _create_format_safe('pink', '#c678dd'),           # return, if, for, while, etc.
-            'keyword_imp': _create_format_safe('pink', '#c678dd'),            # import, export, from, <?target in XML?
-            'builtin': _create_format_safe('red', '#e06c75'),                # print, len, Math, console
-            'special_var': _create_format_safe('yellow', '#EBCB8B'),          # self, this, True, False, null
-            'operator': _create_format_safe('white', '#abb2bf'),              # +, -, *, =, ==, =>
-            'brace': _create_format_safe('white', '#abb2bf'),                 # (), {}, []
-            'punctuation': _create_format_safe('white', '#abb2bf'),           # ,, ;, :
-            'number': _create_format_safe('red', '#e06c75'),
-            'func_name': _create_format_safe('green', '#7EC7A2'),
-            'class_name': _create_format_safe('orange', '#caaa6a', bold=True),
-            'decorator': _create_format_safe('pink', '#c678dd', bold=True),   # @decorator
-            'string': _create_format_safe('green', '#98C379'),                # Base string content
-            'string_escape': _create_format_safe('pink', '#c678dd', bold=True),# \n, \t, \\
-            'string_special': _create_format_safe('yellow', '#EBCB8B', italic=True),# f/r prefix, {}/ ${} interp. markers, <![CDATA[ delimiters
-            'docstring': _create_format_safe('gray4', '#6d8dad', italic=True),# Python docstring """..."""
-            'regex': _create_format_safe('pink', '#c678dd'),                 # /regex/ or r'...'? Context matters.
-            'comment': _create_format_safe('gray4', '#6d8dad', italic=True), # //, #, /*...*/, <!-- ... -->, <!DOCTYPE...>
-            # HTML/XML Specific
-            'html_tag': _create_format_safe('blue', '#61afef'),           # <tag>, </tag>, <>, <? ?>, <! ]]>, name
-            'html_attr_name': _create_format_safe('yellow', '#EBCB8B'),     # attribute=
-            'html_attr_value': _create_format_safe('green', '#98C379'),    # "value"
-            'html_entity': _create_format_safe('red', '#e06c75'),         # &
-            # CSS Specific
-            'css_selector': _create_format_safe('pink', '#c678dd'),        # .class, #id, tag
-            'css_property': _create_format_safe('white', '#abb2bf'),        # color:
-            'css_value': _create_format_safe('green', '#98C379'),          # blue, 12px, inherit
-            # JSON Specific
-            'json_key': _create_format_safe('blue', '#61afef'),           # "key":
+            'keyword': _create_format_safe('purple', '#c678dd'),             # keywords like class, def, if, for
+            'keyword_decl': _create_format_safe('purple', '#c678dd', bold=True), # class, def, function, const
+            'keyword_ctrl': _create_format_safe('purple', '#c678dd'),        # return, if, for, while, etc.
+            'keyword_imp': _create_format_safe('purple', '#c678dd'),         # import, export, from
+            'builtin': _create_format_safe('cyan', '#56b6c2'),               # print, len, Math, console
+            'special_var': _create_format_safe('orange', '#d19a66'),         # self, this, True, False, null
+            'operator': _create_format_safe('white', '#abb2bf'),             # +, -, *, =, ==, =>
+            'brace': _create_format_safe('white', '#abb2bf'),                # (), {}, []
+            'punctuation': _create_format_safe('white', '#abb2bf'),          # ,, ;, :
+            'number': _create_format_safe('orange', '#d19a66'),              # numbers
+            'func_name': _create_format_safe('blue', '#61afef'),             # function names
+            'class_name': _create_format_safe('yellow', '#e5c07b', bold=True), # class names
+            'decorator': _create_format_safe('blue', '#61afef', bold=True),   # @decorator
+            'string': _create_format_safe('green', '#98c379'),               # Base string content
+            'string_escape': _create_format_safe('cyan', '#56b6c2', bold=True),# \n, \t, \\
+            'string_special': _create_format_safe('orange', '#d19a66', italic=True),# f/r prefix, interpolation markers
+            'docstring': _create_format_safe('gray4', '#5c6370', italic=True),# Python docstring """..."""
+            'regex': _create_format_safe('red', '#e06c75'),                  # regex patterns
+            'comment': _create_format_safe('gray4', '#5c6370', italic=True), # //, #, /*...*/, <!-- ... -->
+            # HTML/XML Specific - Atom One Dark colors
+            'html_tag': _create_format_safe('red', '#e06c75'),             # <tag>, </tag>
+            'html_attr_name': _create_format_safe('orange', '#d19a66'),    # attribute=
+            'html_attr_value': _create_format_safe('green', '#98c379'),    # "value"
+            'html_entity': _create_format_safe('blue', '#61afef'),         # &entity;
+            # CSS Specific - Atom One Dark colors
+            'css_selector': _create_format_safe('red', '#e06c75'),         # .class, #id, tag
+            'css_property': _create_format_safe('blue', '#61afef'),        # color:
+            'css_value': _create_format_safe('green', '#98c379'),          # blue, 12px, inherit
+            # JSON Specific - Atom One Dark colors
+            'json_key': _create_format_safe('red', '#e06c75'),             # "key":
         }
 
         self.single_line_rules = []
