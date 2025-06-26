@@ -1335,9 +1335,56 @@ class Notepad(QMainWindow):
             self.text_edit.find(text)
 
     def show_about(self):
-        QMessageBox.about(self, f"About {APP_NAME}", 
-                         f"<b>{APP_NAME}</b><br><br>A simple text editor.<br><br>"
-                         f"Built with PyQt6")
+        about_text = f"""
+        <div style="font-family: Segoe UI, Arial, sans-serif; line-height: 1.4;">
+        <h2 style="color: #61afef; margin: 0 0 15px 0;">{APP_NAME}</h2>
+    
+    
+        <h3 style="color: #98c379; margin: 20px 0 10px 0;">Shortcuts</h3>
+        <table style="border-collapse: collapse; width: 100%;">
+            <tr><td style="padding: 2px 10px 2px 0;"><b>Ctrl+N</b></td><td>New file</td></tr>
+            <tr><td style="padding: 2px 10px 2px 0;"><b>Ctrl+O</b></td><td>Open file</td></tr>
+            <tr><td style="padding: 2px 10px 2px 0;"><b>Ctrl+S</b></td><td>Save file</td></tr>
+            <tr><td style="padding: 2px 10px 2px 0;"><b>Ctrl+F</b></td><td>Find text</td></tr>
+            <tr><td style="padding: 2px 10px 2px 0;"><b>Ctrl+H</b></td><td>Find & Replace</td></tr>
+            <tr><td style="padding: 2px 10px 2px 0;"><b>Ctrl+ +/-</b></td><td>Zoom in/out</td></tr>
+            <tr><td style="padding: 2px 10px 2px 0;"><b>Ctrl+0</b></td><td>Reset zoom</td></tr>
+        </table>
+        
+        <h3 style="color: #98c379; margin: 20px 0 10px 0;">Getting Started</h3>
+        <ol style="margin: 0 0 15px 20px; padding: 0;">
+            <li><b>Create:</b> Use File → New or Ctrl+N for a new document</li>
+            <li><b>Open:</b> Drag files directly into the editor or use File → Open</li>
+            <li><b>Edit:</b> Start typing - syntax highlighting activates automatically</li>
+            <li><b>Preview:</b> For HTML/Markdown/XML files, use View menu for live preview</li>
+            <li><b>Customize:</b> Format menu for fonts, word wrap, and theme options</li>
+        </ol>
+        
+        <h3 style="color: #c678dd; margin: 20px 0 10px 0;">Tips</h3>
+        <ul style="margin: 0 0 15px 20px; padding: 0;">
+            <li>Enable <b>Auto Save</b> in File menu for automatic saving</li>
+            <li>Use <b>Recent Files</b> to quickly access your work</li>
+            <li>XML files support validation - check Format menu</li>
+            <li>Backup files auto-recover on restart after unexpected closure</li>
+            <li>Status bar shows word count, encoding, and cursor position</li>
+        </ul>
+        
+        <h3 style="color: #98c379; margin: 20px 0 10px 0;">Supported File Types</h3>
+        <p style="margin: 0 0 10px 0;"><b>Programming:</b> Python, JavaScript, TypeScript, HTML, CSS, JSON, XML, C/C++, Java, C#, Go, Rust, PHP, Ruby</p>
+        <p style="margin: 0 0 20px 0;"><b>Documents:</b> Markdown, Plain Text, Configuration files (INI, YAML, TOML), Shell scripts</p>
+        
+        <p style="color: #5c6370; font-size: 12px; margin: 20px 0 0 0; text-align: center;">
+            Built with PyQt6 | © 2025 G.L.K.N | Version 1.0
+        </p>
+        </div>
+        """
+        
+        msg = QMessageBox(self)
+        msg.setWindowTitle(f"About {APP_NAME}")
+        msg.setText(about_text)
+        msg.setIcon(QMessageBox.Icon.NoIcon)
+        msg.setStandardButtons(QMessageBox.StandardButton.Ok)
+        msg.exec()
 
     # --- Recent Files ---
     def get_recent_files(self):
