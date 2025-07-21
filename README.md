@@ -48,11 +48,6 @@ A PyQt6 text editor with syntax highlighting and live preview functionality.
 pip install PyQt6 PyQt6-WebEngine
 ```
 
-### Running
-```bash
-python main.py [file_path]
-```
-
 ### Building
 ```bash
 pyinstaller Notepad.spec
