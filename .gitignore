@@ -3,7 +3,7 @@ build/
 dist/
 
 # PyInstaller
-*.spec
+# *.spec  # Commented out to keep Notepad.spec in version control
 
 # Python cache
 __pycache__/
