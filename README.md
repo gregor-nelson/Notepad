@@ -2,6 +2,11 @@
 
 A PyQt6 text editor with syntax highlighting and live preview functionality.
 
+
+<img width="1494" height="839" alt="screenshot_02" src="https://github.com/user-attachments/assets/19cba204-b961-4f82-bbe6-8802a17bd420" />
+<img width="1535" height="831" alt="screenshot_03" src="https://github.com/user-attachments/assets/0d1a9e97-b484-42bb-aabd-2500cdf383ae" />
+
+
 ## Features
 
 - Multi-language syntax highlighting (Python, JavaScript, TypeScript, HTML, CSS, JSON, XML, shell scripts)
@@ -41,11 +46,6 @@ A PyQt6 text editor with syntax highlighting and live preview functionality.
 ### Requirements
 ```bash
 pip install PyQt6 PyQt6-WebEngine
-```
-
-### Running
-```bash
-python main.py [file_path]
 ```
 
 ### Building
