@@ -4,95 +4,106 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-This is a PyQt6-based text editor called "Notepad --" with VS Code-inspired dark theming and advanced features including syntax highlighting, preview capabilities, and file management.
+This is "Notepad --", a PyQt6-based text editor with advanced features including syntax highlighting, live preview, and file management. It's a modern replacement for basic text editors with IDE-like capabilities.
 
-## Build and Development Commands
-
-### Building the Executable
-```bash
-# Build executable using PyInstaller
-pyinstaller Notepad.spec
-```
+## Development Commands
 
 ### Running the Application
 ```bash
-# Run directly
-python main.py
-
-# Run with a specific file
-python main.py filename.txt
+python main.py [optional_file_path]
 ```
 
-## Core Architecture
+### Building Executable
+```bash
+# Uses PyInstaller with Notepad.spec configuration
+pyinstaller Notepad.spec
+```
 
-### Main Components
-- **main.py**: Core application with `Notepad` class (QMainWindow)
-- **syntax_highlighter.py**: Syntax highlighting system with multiple language support
-- **unified_preview.py**: Preview system manager for markdown, HTML, XML
-- **base_preview_viewer.py**: Standardized base classes for all preview viewers
-- **xml_viewer.py**: XML-specific preview functionality (extends BasePreviewViewer)
-- **markdown_viewer.py**: Markdown preview functionality (extends BasePreviewViewer)
-- **html_viewer.py**: HTML preview functionality (extends BasePreviewViewer)
+### Testing
+No automated test framework is currently configured. Manual testing should focus on:
+- File operations (open, save, new)
+- Syntax highlighting for various languages
+- Preview functionality for HTML/Markdown/XML
+- Encoding detection and conversion
+
+## Architecture Overview
+
+### Core Structure
+- **main.py**: Entry point and main application class (`Notepad`) containing all UI logic, file operations, and application state
+- **components/**: Preview and UI components
+  - `unified_preview.py`: Manages all preview types (HTML, Markdown, XML) through a unified interface
+  - `base_preview_viewer.py`: Base class for preview widgets
+  - `modules/`: Specific preview implementations (markdown_viewer, xml_viewer, html_viewer)
+- **utils/**: Utility modules
+  - `syntax_highlighter.py`: Comprehensive syntax highlighting system supporting multiple languages
 
 ### Key Design Patterns
-- **Modular Preview System**: Uses a unified preview manager that registers different preview types based on file extensions
-- **Standardized Preview Architecture**: All preview viewers extend `BasePreviewViewer` and `BasePreviewWidget` for consistent interface and behavior
-- **Theme System**: VS Code-inspired color scheme stored in `self.colors` dictionary
-- **File Worker Threading**: Background file operations using `QThread` and `FileWorker` class
-- **Plugin Architecture**: Preview modules are integrated via the `unified_preview.integrate_unified_preview()` function
+- **Unified Preview System**: All preview types (HTML, Markdown, XML) are managed through `UnifiedPreviewManager` which handles switching between different preview widgets dynamically
+- **Syntax Highlighting**: Extensible highlighter system with language-specific classes inheriting from `SyntaxHighlighter`
+- **File Worker Pattern**: Background file operations using `QThread` and `FileWorker` for non-blocking I/O
+- **Settings Management**: Uses `QSettings` for persistent configuration storage
 
-### Application Structure
-```
-main.py (QMainWindow)
-├── TextEditWithLineNumbers (QPlainTextEdit with line numbers)
-├── LineNumberArea (Custom widget for line numbers)
-├── UnifiedPreviewManager (Preview system)
-├── FileWorker (Background file operations)
-├── Icons (SVG-based icon system)
-└── Preview Viewers (All extend base classes):
-    ├── BasePreviewViewer (Abstract base for content viewers)
-    ├── BasePreviewWidget (Abstract base for splitter widgets)
-    ├── HTMLViewer/HTMLPreviewWidget
-    ├── MarkdownViewer/MarkdownPreviewWidget
-    └── XMLViewer/XMLPreviewWidget (with XMLTreeWidget & XMLFormattedView)
-```
+### Application State
+- Current file path, encoding, and modification state tracked in main window
+- Backup system with automatic recovery on startup
+- Recent files list with configurable maximum
+- Theme system using Atom One Dark color scheme
 
 ### Preview System Integration
-The preview system is modular and extensible:
-- Extensions are registered in `PREVIEW_TYPES` dictionary
-- Each preview type has its own module (markdown_viewer, xml_viewer, html_viewer)
-- All viewers follow standardized interface: `BasePreviewViewer.update_content()` and `BasePreviewWidget`
-- Common functionality (styling, error handling, scroll preservation) is provided by base classes
+The preview system is modular and file-type-aware:
 - Preview widgets are created on-demand and cached
-- Integration happens through `unified_preview.integrate_unified_preview(main_window)`
+- Live preview mode updates content as you type
+- Manual refresh capability (F5)
+- Preview visibility is toggled per file type
 
-### File Handling
-- Supports multiple encodings with BOM detection
-- Backup system for unsaved changes
-- Recent files management
-- Drag and drop support for text files
-- Large file handling with chunked reading/writing
+### Supported File Types
+**Programming**: Python, JavaScript, TypeScript, HTML, CSS, JSON, XML, C/C++, Java, C#, Go, Rust, PHP, Ruby
+**Documents**: Markdown, Plain Text, Configuration files (INI, YAML, TOML), Shell scripts
 
-### Color Scheme
-Uses VS Code Dark+ inspired colors accessible via `self.colors`:
-- `"black"`: Main background (#1e1e1e)
-- `"white"`: Main text (#d4d4d4)
-- `"blue"`: Accent color (#007acc)
-- `"selection"`: Selection background (#264f78)
-- And more defined in `setupTheme()` method
+## Key Components to Understand
 
-## Key Configuration
-- Organization: "InterMoor"
-- Application: "Notepad --"
-- Default encoding: UTF-8
-- Backup interval: 30 seconds
-- Autosave interval: 5 minutes
-- Max recent files: 10
-- Supported text file extensions in `TEXT_EXTENSIONS` set
+### Main Window (`main.py:369-1528`)
+- Central application logic
+- File operations with encoding detection
+- Menu system with dynamic visibility based on file type
+- Theme and UI management
 
-## Development Notes
-- The application uses QSettings for persistent configuration
-- Custom SVG icons are defined inline in the `Icons` class
-- Syntax highlighting is file extension-based
-- Preview functionality is automatically integrated when the application starts
-- The application supports both standalone text editing and split-view preview modes
+### Syntax Highlighting (`utils/syntax_highlighter.py`)
+- Language-specific highlighters: `PythonHighlighter`, `JavaScriptHighlighter`, `HtmlHighlighter`, etc.
+- Factory function `get_highlighter_for_file()` for automatic language detection
+- One Dark theme integration for consistent coloring
+
+### Preview System (`components/unified_preview.py`)
+- `UnifiedPreviewManager` handles all preview types
+- Dynamic widget creation and caching
+- File type detection and menu visibility management
+
+## Development Guidelines
+
+### File Operations
+- All file I/O should use `FileWorker` for background processing
+- Encoding detection is handled automatically via `detect_encoding_with_bom()`
+- Backup files are created automatically and cleaned on successful save
+
+### Adding New Language Support
+1. Create new highlighter class in `syntax_highlighter.py` inheriting from `SyntaxHighlighter`
+2. Add file extension mapping in `get_highlighter_for_file()`
+3. Update `TEXT_EXTENSIONS` set in `main.py` if needed
+
+### Adding New Preview Types
+1. Create new viewer module in `components/modules/`
+2. Add preview type mapping in `unified_preview.py:PREVIEW_TYPES`
+3. Add widget creation logic in `UnifiedPreviewManager.get_or_create_preview_widget()`
+
+### UI Theme Customization
+- Colors are defined in `main.py:393-413` as the `colors` dictionary
+- VS Code-inspired stylesheet in `setupTheme()` method
+- Icon system uses inline SVG with color replacement
+
+## Build Configuration
+
+### PyInstaller Settings (`Notepad.spec`)
+- Entry point: `main.py`
+- Icon: `icon.ico`
+- Console mode disabled for windowed application
+- UPX compression enabled
