@@ -558,7 +558,7 @@ class Notepad(QMainWindow):
         # Format menu
         format_menu = menu_bar.addMenu('F&ormat')
         self.wrap_action = self.add_menu_action(format_menu, '&Word Wrap', 
-                                               self.toggle_word_wrap, checkable=True)
+                                               self.toggle_word_wrap, shortcut="Alt+Z", checkable=True)
         
         font_action = self.add_menu_action(format_menu, '&Font...', self.choose_font)
         font_action.setIcon(self.icons.get_icon(Icons.FONT, self.colors["icon"]))
@@ -1510,6 +1510,9 @@ class Notepad(QMainWindow):
             event.ignore()
 
 def main():
+    # Required for QWebEngineWidgets
+    QApplication.setAttribute(Qt.ApplicationAttribute.AA_ShareOpenGLContexts)
+    
     app = QApplication(sys.argv)
     app.setOrganizationName(ORG_NAME)
     app.setApplicationName(APP_NAME)
