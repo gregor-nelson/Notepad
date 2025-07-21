@@ -1,10 +1,16 @@
 # -*- mode: python ; coding: utf-8 -*-
 
+import os
+
 # Speed optimizations
 EXCLUDES = [
     'tkinter', 'test', 'unittest', 'pdb', 'distutils', 'setuptools',
     'PIL', 'matplotlib', 'numpy', 'scipy', 'pandas'  # Exclude if not used
 ]
+
+# Get the directory where this spec file is located
+SPEC_DIR = os.path.dirname(os.path.abspath(SPEC))
+ICON_PATH = os.path.join(SPEC_DIR, 'icon.ico')
 
 a = Analysis(
     ['main.py'],
@@ -25,24 +31,22 @@ pyz = PYZ(a.pure, a.zipped_data)
 exe = EXE(
     pyz,
     a.scripts,
+    a.binaries,
+    a.zipfiles,
+    a.datas,
     [],
-    exclude_binaries=True,
     name='Notepad',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
-    upx=False,
-    console=False,
-    icon='icon.ico',
-)
-
-coll = COLLECT(
-    exe,
-    a.binaries,
-    a.zipfiles,
-    a.datas,
-    strip=False,
-    upx=False,
+    upx=True,
     upx_exclude=[],
-    name='Notepad',
+    runtime_tmpdir=None,
+    console=False,
+    disable_windowed_traceback=False,
+    argv_emulation=False,
+    target_arch=None,
+    codesign_identity=None,
+    entitlements_file=None,
+    icon=ICON_PATH,
 )
