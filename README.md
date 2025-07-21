@@ -2,9 +2,11 @@
 
 A PyQt6 text editor with syntax highlighting and live preview functionality.
 
-<img width="1052" height="692" alt="screenshot_01" src="https://github.com/user-attachments/assets/53cd245e-3598-4120-b442-daa038fae578" />
+<img width="1920" height="1080" alt="screenshot_03" src="https://github.com/user-attachments/assets/c6c0db1c-9561-401e-abb3-8de635760828" />
 
 <img width="1494" height="839" alt="screenshot_02" src="https://github.com/user-attachments/assets/19cba204-b961-4f82-bbe6-8802a17bd420" />
+
+<img width="1052" height="692" alt="screenshot_01" src="https://github.com/user-attachments/assets/53cd245e-3598-4120-b442-daa038fae578" />
 
 ## Features
 
